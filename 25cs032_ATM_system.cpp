@@ -4,57 +4,52 @@ using namespace std;
 
 class ATM
 {
-    int accno, pin, balance;
+    int cardno, pin, balance;
 
 public:
 
-   
-    void createAccount()
-    {
-        ofstream fout("accounts.txt", ios::app);
-
-        int newAcc, newPin, deposit;
-
-        cout << "\n--- Create Account ---\n";
-
-        cout << "Enter new Account Number: ";
-        cin >> newAcc;
-
-        cout << "Set PIN: ";
-        cin >> newPin;
-
-        cout << "Enter Initial Deposit: ";
-        cin >> deposit;
-
-        fout << newAcc << " " << newPin << " " << deposit << endl;
-
-        fout.close();
-
-        cout << "\nAccount Created Successfully!\n";
-    }
-
-    
     bool login()
     {
-        int inputAcc, inputPin;
+        int inputCard, inputPin;
         bool found = false;
 
-        cout << "Enter Account Number: ";
-        cin >> inputAcc;
+        cout << "Enter ATM Card Number: ";
+        if(!(cin >> inputCard)){
+            cout << "Invalid input!\n";
+            cin.clear();
+            cin.ignore(1000, '\n');
+            return false;
+        }
 
         cout << "Enter PIN: ";
-        cin >> inputPin;
+        if(!(cin >> inputPin)){
+            cout << "Invalid input!\n";
+            cin.clear();
+            cin.ignore(1000, '\n');
+            return false;
+        }
 
         ifstream fin("accounts.txt");
 
-        while(fin >> accno >> pin >> balance)
+        if(!fin){
+            cout << "Error: accounts.txt not found!\n";
+            return false;
+        }
+
+        int c, p, b;
+
+        while(fin >> c >> p >> b)
         {
-            if(accno == inputAcc && pin == inputPin)
+            if(c == inputCard && p == inputPin)
             {
+                cardno = c;
+                pin = p;
+                balance = b;
                 found = true;
                 break;
             }
         }
+
         fin.close();
 
         if(found){
@@ -62,25 +57,24 @@ public:
             return true;
         }
         else{
-            cout << "\nInvalid Account or PIN!\n";
+            cout << "\nInvalid Card or PIN!\n";
             return false;
         }
     }
 
-    
     void saveAll()
     {
         ifstream fin("accounts.txt");
         ofstream temp("temp.txt");
 
-        int a, p, b;
+        int c, p, b;
 
-        while(fin >> a >> p >> b)
+        while(fin >> c >> p >> b)
         {
-            if(a == accno)
-                temp << accno << " " << pin << " " << balance << endl;
+            if(c == cardno)
+                temp << cardno << " " << pin << " " << balance << endl;
             else
-                temp << a << " " << p << " " << b << endl;
+                temp << c << " " << p << " " << b << endl;
         }
 
         fin.close();
@@ -99,27 +93,41 @@ public:
     {
         int amount;
         cout << "Enter amount: ";
-        cin >> amount;
+
+        if(!(cin >> amount))
+        {
+            cout << "❌ Invalid input! Enter numbers only.\n";
+            cin.clear();
+            cin.ignore(1000, '\n');
+            return;   // return to menu (loop continues)
+        }
 
         balance += amount;
         saveAll();
 
-        cout << "Amount Deposited!\n";
+        cout << "✅ Amount Deposited!\n";
     }
 
     void withdraw()
     {
         int amount;
         cout << "Enter amount: ";
-        cin >> amount;
+
+        if(!(cin >> amount))
+        {
+            cout << "❌ Invalid input! Enter numbers only.\n";
+            cin.clear();
+            cin.ignore(1000, '\n');
+            return;   // return to menu (loop continues)
+        }
 
         if(amount <= balance && balance - amount >= 500){
             balance -= amount;
             saveAll();
-            cout << "Collect Cash!\n";
+            cout << "💵 Collect Cash!\n";
         }
         else{
-            cout << "Insufficient Balance!\n";
+            cout << "❌ Insufficient Balance!\n";
         }
     }
 
@@ -128,11 +136,21 @@ public:
         int oldpin, newpin;
 
         cout << "Enter old PIN: ";
-        cin >> oldpin;
+        if(!(cin >> oldpin)){
+            cout << "Invalid input!\n";
+            cin.clear();
+            cin.ignore(1000, '\n');
+            return;
+        }
 
         if(oldpin == pin){
             cout << "Enter new PIN: ";
-            cin >> newpin;
+            if(!(cin >> newpin)){
+                cout << "Invalid input!\n";
+                cin.clear();
+                cin.ignore(1000, '\n');
+                return;
+            }
 
             pin = newpin;
             saveAll();
@@ -157,7 +175,13 @@ public:
             cout << "5. Exit\n";
 
             cout << "Enter choice: ";
-            cin >> choice;
+
+            if(!(cin >> choice)){
+                cout << "❌ Invalid Choice!\n";
+                cin.clear();
+                cin.ignore(1000, '\n');
+                continue;
+            }
 
             switch(choice)
             {
@@ -180,26 +204,27 @@ int main()
 
     do{
         cout << "\n===== ATM SYSTEM =====\n";
-        cout << "1. Create Account\n";
-        cout << "2. Login\n";
-        cout << "3. Exit\n";
+        cout << "1. Login\n";
+        cout << "2. Exit\n";
 
         cout << "Enter choice: ";
-        cin >> choice;
+
+        if(!(cin >> choice)){
+            cout << "❌ Invalid Choice!\n";
+            cin.clear();
+            cin.ignore(1000, '\n');
+            continue;
+        }
 
         switch(choice)
         {
             case 1:
-                user.createAccount();
-                break;
-
-            case 2:
                 if(user.login()){
                     user.menu();
                 }
                 break;
 
-            case 3:
+            case 2:
                 cout << "Goodbye!\n";
                 break;
 
@@ -207,7 +232,7 @@ int main()
                 cout << "Invalid Choice!\n";
         }
 
-    }while(choice != 3);
+    }while(choice != 2);
 
     return 0;
 }
